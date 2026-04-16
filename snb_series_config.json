@@ -48,12 +48,12 @@
   "scale": 1.0
     },
     "domestic_loans": {
-      "label": "Domestic loans",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
+  "label": "Domestic loans",
+  "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(GD)&fromDate=2025-02&toDate=2026-02",
+  "format": "csv",
+  "date_field": "Date",
+  "value_field": "Value",
+  "scale": 1.0
     },
     "customer_deposits": {
       "label": "Customer deposits",
