@@ -55,22 +55,6 @@
   "value_field": "Value",
   "scale": 1.0
     },
-    "customer_deposits": {
-      "label": "Customer deposits",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
-    },
-    "policy_rate": {
-      "label": "SNB policy rate",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
-    },
     "saron": {
       "label": "SARON",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
