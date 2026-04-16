@@ -55,6 +55,14 @@
   "value_field": "Value",
   "scale": 1.0
     },
+    "policy_rate": {
+      "label": "SNB policy rate",
+      "url": "https://data.snb.ch/api/cube/snbgwdzid/data/csv/en?dimSel=D0(LZ)&fromDate=2020-01-01&toDate=2026-12-31",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+     }, 
     "saron": {
       "label": "SARON",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
