@@ -177,7 +177,20 @@ def to_float(x):
 
 def parse_csv_bytes(raw: bytes, date_field: str, value_field: str, scale: float):
     text = raw.decode('utf-8-sig', errors='ignore')
-    rows = list(csv.DictReader(io.StringIO(text)))
+    lines = text.splitlines()
+
+    header_index = None
+    for i, line in enumerate(lines[:60]):
+        cols = [c.strip() for c in line.split(',')]
+        if date_field in cols and value_field in cols:
+            header_index = i
+            break
+
+    if header_index is None:
+        return []
+
+    cleaned = "\n".join(lines[header_index:])
+    rows = list(csv.DictReader(io.StringIO(cleaned)))
     out = []
     for row in rows:
         dt = parse_date(row.get(date_field))
