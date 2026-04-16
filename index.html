@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SNB Liquidity Command Center</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#070b12;
+      --panel:#0f1622;
+      --panel2:#131d2c;
+      --panel3:#172235;
+      --line:#223249;
+      --text:#dce7f6;
+      --muted:#8ea1bc;
+      --cyan:#3ecbff;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --red:#ef4444;
+      --purple:#8b5cf6;
+      --shadow:0 14px 34px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:
+        radial-gradient(circle at top right, rgba(24,45,77,.45), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(14,28,49,.35), transparent 24%),
+        linear-gradient(180deg,#06090e,#090d14 40%,#05070b);
+      color:var(--text);
+      font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    .app{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:260px 1fr 360px;
+      gap:16px;
+      padding:16px;
+    }
+    .sidebar,.intel{
+      background:linear-gradient(180deg,rgba(17,24,38,.98),rgba(9,13,22,.98));
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+    .main{display:flex;flex-direction:column;gap:16px;min-width:0}
+    .sidebar{overflow:hidden}
+    .brand{
+      padding:20px;
+      border-bottom:1px solid var(--line);
+    }
+    .badge{
+      display:inline-block;
+      padding:5px 9px;
+      border-radius:999px;
+      font-size:11px;
+      color:#b6ebff;
+      background:rgba(62,203,255,.12);
+      border:1px solid rgba(62,203,255,.22);
+      margin-bottom:10px;
+    }
+    .brand h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .brand p{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+    .nav{padding:14px}
+    .tab-btn{
+      width:100%;
+      text-align:left;
+      margin:8px 0;
+      padding:13px 14px;
+      background:transparent;
+      color:var(--text);
+      border:1px solid transparent;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .tab-btn:hover{
+      background:rgba(62,203,255,.06);
+      border-color:rgba(62,203,255,.18);
+    }
+    .tab-btn.active{
+      background:linear-gradient(90deg,rgba(62,203,255,.18),rgba(62,203,255,.04));
+      border-color:rgba(62,203,255,.26);
+    }
+    .tab-btn strong{display:block;font-size:14px}
+    .tab-btn span{display:block;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.35}
+    .status-strip{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:12px;
+    }
+    .status-card,.panel,.kpi,.info-card,.legend,.meta-card{
+      background:linear-gradient(180deg,rgba(15,22,34,.96),rgba(9,13,21,.96));
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+    }
+    .status-card{padding:14px 16px}
+    .eyebrow{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--muted);
+    }
+    .status-value{
+      font-size:24px;
+      font-weight:700;
+      margin-top:8px;
+    }
+    .status-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+    .signal{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      font-size:12px;
+    }
+    .dot{width:10px;height:10px;border-radius:50%}
+    .green{background:var(--green)}
+    .amber{background:var(--amber)}
+    .red{background:var(--red)}
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+    .kpi{
+      padding:16px;
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi .pulse{
+      position:absolute;
+      top:-40px;
+      right:-24px;
+      width:120px;
+      height:120px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(62,203,255,.18),transparent 70%);
+    }
+    .kpi .value{
+      font-size:28px;
+      font-weight:700;
+      margin:8px 0;
+    }
+    .mini{font-size:12px;color:var(--muted)}
+    .delta{font-size:13px}
+    .delta.up{color:var(--green)}
+    .delta.down{color:var(--red)}
+    .delta.flat{color:var(--amber)}
+    .spark{height:52px;margin-top:12px}
+    .panels-2{
+      display:grid;
+      grid-template-columns:1.4fr 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    .panel{padding:16px}
+    .panel h3,.info-card h3,.legend h3,.meta-card h3{
+      margin:0 0 12px;
+      font-size:15px;
+    }
+    .hero-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .chart-wrap{height:310px;position:relative}
+    .chart-sm{height:230px;position:relative}
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    .table th,.table td{
+      padding:10px 8px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      text-align:left;
+    }
+    .table th{color:var(--muted);font-weight:600}
+    .intel{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .info-card,.legend,.meta-card{padding:16px}
+    .info-card p,.legend p,.meta-card p{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+      margin:8px 0;
+    }
+    .band{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:9px 10px;
+      background:rgba(255,255,255,.03);
+      border-radius:10px;
+      margin-top:8px;
+      font-size:13px;
+      align-items:flex-start;
+    }
+    .record-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .record{
+      background:rgba(255,255,255,.03);
+      border-radius:10px;
+      padding:10px;
+    }
+    .record .label{
+      font-size:11px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .record .val{
+      font-size:16px;
+      font-weight:700;
+      margin-top:6px;
+    }
+    .footer-note{
+      margin-top:auto;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    @media (max-width: 1440px){
+      .app{grid-template-columns:220px 1fr 320px}
+      .kpis{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width: 1180px){
+      .app{grid-template-columns:1fr}
+      .status-strip,.kpis,.panels-2{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="badge">Institutional Macro Dashboard</div>
+        <h1>SNB Liquidity Command Center</h1>
+        <p>Swiss franc liquidity, sterilisation, banking credit, rates, curve structure, and FX reserve regime in a Bloomberg-style dark layout.</p>
+      </div>
+
+      <div class="nav">
+        <button class="tab-btn active" data-tab="overview">
+          <strong>Overview</strong>
+          <span>Master regime and liquidity pulse</span>
+        </button>
+        <button class="tab-btn" data-tab="core">
+          <strong>SNB Core</strong>
+          <span>Balance sheet and sight deposits</span>
+        </button>
+        <button class="tab-btn" data-tab="sterilisation">
+          <strong>Sterilisation</strong>
+          <span>SNB Bills and repo drainage</span>
+        </button>
+        <button class="tab-btn" data-tab="banking">
+          <strong>Banking & Credit</strong>
+          <span>Domestic loans and deposits</span>
+        </button>
+        <button class="tab-btn" data-tab="rates">
+          <strong>Rates & Curve</strong>
+          <span>SARON, policy and sovereign curve</span>
+        </button>
+        <button class="tab-btn" data-tab="fx">
+          <strong>FX & Reserves</strong>
+          <span>Reserve direction and CHF regime</span>
+        </button>
+        <button class="tab-btn" data-tab="ai">
+          <strong>AI Layer</strong>
+          <span>Signals, alerts and regime score</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="status-strip" id="topStatus"></section>
+
+      <section id="tab-overview" class="tab-panel active"></section>
+      <section id="tab-core" class="tab-panel"></section>
+      <section id="tab-sterilisation" class="tab-panel"></section>
+      <section id="tab-banking" class="tab-panel"></section>
+      <section id="tab-rates" class="tab-panel"></section>
+      <section id="tab-fx" class="tab-panel"></section>
+      <section id="tab-ai" class="tab-panel"></section>
+    </main>
+
+    <aside class="intel">
+      <div class="info-card" id="conceptCard"></div>
+      <div class="legend" id="legendCard"></div>
+      <div class="meta-card" id="metaCard"></div>
+      <div class="footer-note">
+        Auto-refresh is enabled. The dashboard first reads local <strong>data.json</strong>, then re-renders charts, thresholds, record levels, concept cards, and signal states without breaking tab navigation.
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const fallbackData = {
+      meta: {
+        dashboard_title: "SNB Liquidity Command Center",
+        last_sync: "2026-04-16T10:30:00Z",
+        auto_refresh_seconds: 900,
+        source: "SNB data portal / market references",
+        stale_after_hours: 36,
+        version: "v1.0 institutional"
+      },
+      status: {
+        liquidity_regime: "Mixed-to-Tight",
+        policy_bias: "Restrictive",
+        market_stress: "Contained",
+        reserve_direction: "Contracting",
+        data_integrity: "Healthy"
+      },
+      tabs: {
+        overview: {
+          concept_title: "Macro liquidity pulse",
+          concept: "This tab aggregates the broad SNB operating regime by combining sight deposits, sterilisation tools, fiscal balances and reserve direction into one clean trading view.",
+          formula: "Net Liquidity Pulse = Δ Sight Deposits - Δ SNB Bills - Δ CHF Absorbing Repos - Δ Confederation Liabilities + FX Reserve Overlay",
+          thresholds: [
+            {label:"Green", desc:"Expansionary liquidity pulse, easier CHF funding, improving risk backdrop", color:"green"},
+            {label:"Amber", desc:"Mixed regime, conflicting signals across balance-sheet and funding channels", color:"amber"},
+            {label:"Red", desc:"Net drainage, tighter CHF conditions, stronger defensive regime", color:"red"}
+          ],
+          kpis: [
+            {key:"Net Liquidity Pulse", value:"-1.7", suffix:"z-score", delta:"-0.4 vs prior week", direction:"down", spark:[60,62,58,57,59,55,53,52,49,46,44,41]},
+            {key:"Sight Deposits", value:"452.8", suffix:"bn CHF", delta:"-3.2 bn", direction:"down", spark:[480,478,476,474,470,468,466,463,459,457,455,453]},
+            {key:"Sterilisation Pressure", value:"68", suffix:"/100", delta:"+7 pts", direction:"up", spark:[32,36,40,44,48,51,55,59,60,63,66,68]},
+            {key:"Fiscal Drain", value:"29.4", suffix:"bn CHF", delta:"+1.1 bn", direction:"up", spark:[23,24,23,24,25,26,27,28,28,29,29,29.4]}
+          ],
+          charts: {
+            stackedBars: {
+              labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+              series:[
+                {name:"Sight Deposits Δ", data:[3,1,-1,-2,1,-1,-2,-3,-1,-2,-2,-3], color:"#3ecbff"},
+                {name:"SNB Bills Δ", data:[-1,0,1,2,1,2,2,3,1,2,2,2], color:"#f59e0b"},
+                {name:"Confederation Liabilities Δ", data:[0,1,0,0,1,1,0,1,1,0,1,1], color:"#ef4444"}
+              ]
+            },
+            heatmap: {
+              labels:["W1","W2","W3","W4","W5","W6","W7","W8","W9","W10","W11","W12"],
+              values:[58,61,57,52,50,49,47,45,43,42,41,39]
+            }
+          },
+          records:{high:"+2.8 z", high_date:"2023-03", low:"-2.4 z", low_date:"2022-10", range:"-2.4 to +2.8 z"},
+          table:[
+            ["Net Liquidity Pulse","-1.7 z","Warning","12M pct 18%"],
+            ["Sight Deposits","452.8 bn","Tightening","Downtrend"],
+            ["SNB Bills + Repos","Rising","Drainage","Absorbing"],
+            ["FX Reserve Direction","Contracting","Restrictive","Negative overlay"]
+          ]
+        },
+        core: {
+          concept_title: "SNB balance-sheet core",
+          concept: "This tab tracks the core SNB operating balance sheet with special focus on sight deposits, foreign currency investments, Confederation balances and banknotes in circulation.",
+          formula: "Core Balance Monitoring = Sight Deposits + FX Investments + Confederation Liabilities + Banknotes",
+          thresholds: [
+            {label:"Green", desc:"Sight deposits rising and reserves stable or expanding", color:"green"},
+            {label:"Amber", desc:"Balance sheet flat with mixed liability composition", color:"amber"},
+            {label:"Red", desc:"Sight deposits and reserves contracting together", color:"red"}
+          ],
+          mainChart: {
+            labels:["2023-05","2023-07","2023-09","2023-11","2024-01","2024-03","2024-05","2024-07","2024-09","2024-11","2025-01","2025-03"],
+            series:[
+              {name:"FX Investments", data:[690,686,680,676,672,669,664,659,653,647,641,635], color:"#8b5cf6"},
+              {name:"Sight Deposits", data:[496,491,488,484,481,478,474,470,466,462,458,453], color:"#3ecbff"},
+              {name:"Confederation Liabilities", data:[18,19,18,20,21,23,24,25,24,26,28,29], color:"#ef4444"}
+            ]
+          },
+          auxChart: {
+            labels:["2024 Q2","2024 Q3","2024 Q4","2025 Q1"],
+            series:[
+              {name:"Assets", data:[760,748,739,728], color:"#3ecbff"},
+              {name:"Liabilities", data:[760,748,739,728], color:"#22c55e"}
+            ]
+          },
+          records:{high:"FX assets 720 bn", high_date:"2022-12", low:"Sight deposits 405 bn", low_date:"2019-08", range:"Illustrative record set"},
+          table:[
+            ["FX Investments","635 bn CHF","Below 12M mean","Restrictive overlay"],
+            ["Sight Deposits","453 bn CHF","Low band","Banks less liquid"],
+            ["Confederation Liabilities","29 bn CHF","Upper band","Fiscal drain"],
+            ["Banknotes","Stable","Neutral","Structural liability"]
+          ]
+        },
+        sterilisation: {
+          concept_title:"Sterilisation desk",
+          concept:"This tab isolates direct liquidity drainage tools such as SNB Bills and liquidity-absorbing repo operations against the move in sight deposits.",
+          formula:"Drainage Pressure = Δ SNB Bills + Δ Absorbing Repos - Δ Sight Deposits",
+          thresholds:[
+            {label:"Green", desc:"Absorption tools easing or rolling off", color:"green"},
+            {label:"Amber", desc:"Temporary use of drainage tools", color:"amber"},
+            {label:"Red", desc:"Persistent sterilisation pressure", color:"red"}
+          ],
+          mainChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"SNB Bills", data:[32,34,36,40,42,45,47,49,51,54,56,58], color:"#f59e0b"},
+              {name:"Absorbing Repos", data:[8,10,12,14,15,17,18,19,20,20,21,22], color:"#ef4444"}
+            ]
+          },
+          auxChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"Drainage Score", data:[36,39,43,48,51,55,58,60,62,64,66,68], color:"#3ecbff"}
+            ]
+          },
+          records:{high:"Drainage score 74", high_date:"2022-11", low:"Drainage score 12", low_date:"2021-03", range:"0 to 100 score"},
+          table:[
+            ["SNB Bills","58 bn CHF","Red","Uptrend"],
+            ["Absorbing Repos","22 bn CHF","Amber","Elevated"],
+            ["Drainage Score","68/100","Red","Tight regime"],
+            ["Signal","Liquidity withdrawal","Red","Watch CHF strength"]
+          ]
+        },
+        banking: {
+          concept_title:"Endogenous money and bank balance sheets",
+          concept:"This tab monitors domestic bank credit creation and customer deposit formation, which shape broader CHF liquidity beyond the SNB liability side.",
+          formula:"Credit Impulse = YoY Domestic Loans Growth - YoY Deposit Growth Gap",
+          thresholds:[
+            {label:"Green", desc:"Loans and deposits expanding in a balanced way", color:"green"},
+            {label:"Amber", desc:"Credit is slowing or deposit growth is uneven", color:"amber"},
+            {label:"Red", desc:"Credit impulse weakening sharply", color:"red"}
+          ],
+          mainChart:{
+            labels:["2024-04","2024-06","2024-08","2024-10","2024-12","2025-02","2025-04","2025-06","2025-08","2025-10","2025-12","2026-02"],
+            series:[
+              {name:"Domestic Loans", data:[1298,1304,1310,1318,1326,1334,1342,1350,1358,1362,1366,1370], color:"#3ecbff"},
+              {name:"Customer Deposits", data:[1630,1638,1643,1650,1658,1664,1670,1678,1685,1690,1695,1701], color:"#22c55e"}
+            ]
+          },
+          auxChart:{
+            labels:["Q1","Q2","Q3","Q4"],
+            series:[
+              {name:"Credit Impulse", data:[0.9,0.8,0.6,0.4], color:"#8b5cf6"}
+            ]
+          },
+          records:{high:"Credit impulse 1.6", high_date:"2021-Q4", low:"-0.7", low_date:"2023-Q2", range:"-1.0 to +2.0"},
+          table:[
+            ["Domestic Loans","1,370 bn CHF","Green","Still expanding"],
+            ["Customer Deposits","1,701 bn CHF","Green","Stable funding"],
+            ["Credit Impulse","0.4","Amber","Losing momentum"],
+            ["Mortgage Bias","High","Neutral","Structural CHF trait"]
+          ]
+        },
+        rates: {
+          concept_title:"Price of money and curve structure",
+          concept:"This tab prices CHF liquidity using the SNB policy stance, SARON, and the Swiss Confederation sovereign curve.",
+          formula:"Funding Stress = SARON vs Policy Rate + 2Y/10Y Slope Behaviour",
+          thresholds:[
+            {label:"Green", desc:"Funding orderly and curve supportive", color:"green"},
+            {label:"Amber", desc:"Curve mixed, carry neutral", color:"amber"},
+            {label:"Red", desc:"Funding pressure or adverse curve repricing", color:"red"}
+          ],
+          mainChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"SNB Policy Rate", data:[1.75,1.75,1.75,1.75,1.50,1.50,1.50,1.25,1.25,1.25,1.00,1.00], color:"#3ecbff"},
+              {name:"SARON", data:[1.72,1.73,1.73,1.72,1.48,1.47,1.46,1.23,1.22,1.22,0.98,0.97], color:"#22c55e"}
+            ]
+          },
+          auxChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"2Y-10Y Spread", data:[-0.18,-0.16,-0.14,-0.12,-0.10,-0.08,-0.06,-0.05,-0.03,-0.02,-0.01,0.02], color:"#f59e0b"}
+            ]
+          },
+          records:{high:"SARON 1.75%", high_date:"2023", low:"-0.78%", low_date:"2021", range:"Negative-rate history included"},
+          table:[
+            ["Policy Rate","1.00%","Neutral","Official stance"],
+            ["SARON","0.97%","Green","Orderly funding"],
+            ["2Y Yield","0.18%","Amber","Front-end sensitive"],
+            ["10Y Yield","0.16%","Amber","Flat curve"]
+          ]
+        },
+        fx: {
+          concept_title:"FX reserves and CHF regime",
+          concept:"This tab follows the direction of foreign-currency investments and links reserve changes to the broader CHF safe-haven liquidity regime.",
+          formula:"FX Reserve Overlay = Δ Foreign Currency Investments + CHF Strength Context",
+          thresholds:[
+            {label:"Green", desc:"Reserves stable or rising, CHF pressure softer", color:"green"},
+            {label:"Amber", desc:"Reserves stable but currency signals mixed", color:"amber"},
+            {label:"Red", desc:"Reserves falling with stronger CHF defensive tone", color:"red"}
+          ],
+          mainChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"Foreign Currency Investments", data:[664,661,658,655,651,648,645,642,640,638,636,635], color:"#8b5cf6"}
+            ]
+          },
+          auxChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"CHF Index", data:[101.0,101.2,101.3,101.5,101.9,102.0,102.2,102.4,102.6,102.8,103.1,103.3], color:"#3ecbff"}
+            ]
+          },
+          records:{high:"FX investments 804 bn", high_date:"2021", low:"CHF Index 92", low_date:"2022", range:"Illustrative strategic band"},
+          table:[
+            ["FX Investments","635 bn CHF","Red","Balance-sheet contraction"],
+            ["CHF Index","103.3","Red","Defensive CHF tone"],
+            ["Reserve Direction","Contracting","Red","Negative liquidity overlay"],
+            ["Intervention Bias","Low/Passive","Amber","Monitor SNB language"]
+          ]
+        },
+        ai: {
+          concept_title:"Machine-readable regime layer",
+          concept:"This tab converts SNB macro and market data into signals for future AI agents, including regime score, alert ranking, publication health and narrative prompts.",
+          formula:"AI Regime Score = Liquidity Pulse + Sterilisation Score + Funding Score + Reserve Score + Credit Score",
+          thresholds:[
+            {label:"Green", desc:"Supportive macro liquidity regime", color:"green"},
+            {label:"Amber", desc:"Mixed / transition regime", color:"amber"},
+            {label:"Red", desc:"Tight and defensive macro regime", color:"red"}
+          ],
+          mainChart:{
+            labels:["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"],
+            series:[
+              {name:"AI Regime Score", data:[54,52,50,48,46,44,43,41,39,37,36,34], color:"#3ecbff"},
+              {name:"Alert Density", data:[18,20,22,24,26,28,31,33,34,36,38,40], color:"#ef4444"}
+            ]
+          },
+          auxChart:{
+            labels:["Liquidity","Sterilisation","Fiscal","Credit","Rates","FX"],
+            series:[
+              {name:"Subsystem Score", data:[34,68,61,52,47,72], color:"#22c55e"}
+            ]
+          },
+          records:{high:"Regime score 71", high_date:"2023-04", low:"31", low_date:"2025-01", range:"0 to 100"},
+          table:[
+            ["AI Regime Score","34/100","Red","Tight macro regime"],
+            ["Top Alert","Sterilisation pressure","Red","Priority 1"],
+            ["Publication Health","100%","Green","Feeds stable"],
+            ["Narrative Mode","Defensive CHF","Amber","Cross-check rates"]
+          ]
+        }
+      }
+    };
+
+    let dashboardData = null;
+    let activeTab = "overview";
+    const chartRegistry = {};
+
+    async function loadDashboardData(){
+      try{
+        const res = await fetch("./data.json?ts=" + Date.now(), { cache: "no-store" });
+        if(!res.ok) throw new Error("data.json unavailable");
+        dashboardData = await res.json();
+      }catch(err){
+        dashboardData = fallbackData;
+      }
+      renderAll();
+    }
+
+    function signalClass(text){
+      const t = (text || "").toLowerCase();
+      if(t.includes("healthy") || t.includes("contained") || t.includes("supportive") || t.includes("orderly")) return "green";
+      if(t.includes("mixed") || t.includes("neutral")) return "amber";
+      return "red";
+    }
+
+    function destroyCharts(){
+      Object.values(chartRegistry).forEach(c => c?.destroy?.());
+      Object.keys(chartRegistry).forEach(k => delete chartRegistry[k]);
+    }
+
+    function createLineChart(id, labels, series, fill=false){
+      const el = document.getElementById(id);
+      if(!el) return;
+      chartRegistry[id] = new Chart(el, {
+        type: "line",
+        data: {
+          labels,
+          datasets: series.map(s => ({
+            label: s.name,
+            data: s.data,
+            borderColor: s.color,
+            backgroundColor: fill ? s.color + "22" : s.color,
+            fill,
+            borderWidth: 2.2,
+            tension: .32,
+            pointRadius: 0,
+            pointHoverRadius: 3
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { labels: { color: "#dce7f6" } },
+            tooltip: {
+              backgroundColor: "#08111b",
+              titleColor: "#fff",
+              bodyColor: "#dce7f6",
+              borderColor: "#233146",
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: { ticks: { color: "#8ea1bc" }, grid: { color: "rgba(255,255,255,.05)" } },
+            y: { ticks: { color: "#8ea1bc" }, grid: { color: "rgba(255,255,255,.05)" } }
+          }
+        }
+      });
+    }
+
+    function createBarChart(id, labels, series, stacked=false){
+      const el = document.getElementById(id);
+      if(!el) return;
+      chartRegistry[id] = new Chart(el, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: series.map(s => ({
+            label: s.name,
+            data: s.data,
+            backgroundColor: s.color,
+            borderRadius: 4
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: "#dce7f6" } },
+            tooltip: {
+              backgroundColor: "#08111b",
+              titleColor: "#fff",
+              bodyColor: "#dce7f6"
+            }
+          },
+          scales: {
+            x: { stacked, ticks: { color: "#8ea1bc" }, grid: { color: "rgba(255,255,255,.05)" } },
+            y: { stacked, ticks: { color: "#8ea1bc" }, grid: { color: "rgba(255,255,255,.05)" } }
+          }
+        }
+      });
+    }
+
+    function createSparkline(id, data, color){
+      const el = document.getElementById(id);
+      if(!el) return;
+      chartRegistry[id] = new Chart(el, {
+        type: "line",
+        data: {
+          labels: data.map((_,i)=>i+1),
+          datasets: [{
+            data,
+            borderColor: color,
+            backgroundColor: color + "22",
+            fill: true,
+            borderWidth: 2,
+            tension: .35,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display:false }, tooltip: { enabled:false } },
+          scales: { x: { display:false }, y: { display:false } }
+        }
+      });
+    }
+
+    function buildStatus(){
+      const s = dashboardData.status;
+      const items = [
+        ["Liquidity Regime", s.liquidity_regime],
+        ["Policy Bias", s.policy_bias],
+        ["Market Stress", s.market_stress],
+        ["Reserve Direction", s.reserve_direction],
+        ["Data Integrity", s.data_integrity]
+      ];
+      document.getElementById("topStatus").innerHTML = items.map(([k,v]) => `
+        <div class="status-card">
+          <div class="eyebrow">${k}</div>
+          <div class="status-value">${v}</div>
+          <div class="signal"><span class="dot ${signalClass(v)}"></span>${signalClass(v).toUpperCase()}</div>
+          <div class="status-sub">Institutional monitoring state</div>
+        </div>
+      `).join("");
+    }
+
+    function tableHTML(rows){
+      return `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Current</th>
+              <th>Regime</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function kpiCard(kpi, index){
+      const sparkId = `spark-${index}`;
+      return `
+        <div class="kpi">
+          <div class="pulse"></div>
+          <div class="eyebrow">${kpi.key}</div>
+          <div class="value">${kpi.value} <span class="mini">${kpi.suffix || ""}</span></div>
+          <div class="delta ${kpi.direction === "up" ? "up" : kpi.direction === "down" ? "down" : "flat"}">${kpi.delta}</div>
+          <div class="spark"><canvas id="${sparkId}"></canvas></div>
+        </div>
+      `;
+    }
+
+    function renderOverview(){
+      const d = dashboardData.tabs.overview;
+      document.getElementById("tab-overview").innerHTML = `
+        <div class="kpis">${d.kpis.map((k,i)=>kpiCard(k,i)).join("")}</div>
+        <div class="panels-2">
+          <div class="panel">
+            <div class="hero-title">
+              <h3>Liquidity Drivers</h3>
+              <div class="badge">Monthly deltas</div>
+            </div>
+            <div class="chart-wrap"><canvas id="overviewBars"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="hero-title">
+              <h3>Regime Heat</h3>
+              <div class="badge">12-week trend</div>
+            </div>
+            <div class="chart-sm"><canvas id="overviewHeat"></canvas></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h3>Overview Signal Matrix</h3>
+          ${tableHTML(d.table)}
+        </div>
+      `;
+
+      d.kpis.forEach((kpi, i) => {
+        const color = i === 2 ? "#f59e0b" : i === 3 ? "#ef4444" : "#3ecbff";
+        createSparkline(`spark-${i}`, kpi.spark, color);
+      });
+      createBarChart("overviewBars", d.charts.stackedBars.labels, d.charts.stackedBars.series, true);
+      createLineChart("overviewHeat", d.charts.heatmap.labels, [
+        {name:"Regime Heat", data:d.charts.heatmap.values, color:"#22c55e"}
+      ], true);
+    }
+
+    function renderStandardTab(tabKey, titleA, titleB){
+      const d = dashboardData.tabs[tabKey];
+      document.getElementById(`tab-${tabKey}`).innerHTML = `
+        <div class="panels-2">
+          <div class="panel">
+            <div class="hero-title">
+              <h3>${titleA}</h3>
+              <div class="badge">Primary series</div>
+            </div>
+            <div class="chart-wrap"><canvas id="${tabKey}Main"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="hero-title">
+              <h3>${titleB}</h3>
+              <div class="badge">Secondary monitor</div>
+            </div>
+            <div class="chart-sm"><canvas id="${tabKey}Aux"></canvas></div>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <h3>${d.concept_title} table</h3>
+          ${tableHTML(d.table)}
+        </div>
+      `;
+      createLineChart(`${tabKey}Main`, d.mainChart.labels, d.mainChart.series, false);
+
+      const auxSeries = d.auxChart.series;
+      const useBar = auxSeries.length === 1 && !auxSeries[0].data.some(v => v < 0);
+      if(useBar){
+        createBarChart(`${tabKey}Aux`, d.auxChart.labels, auxSeries, false);
+      } else {
+        createLineChart(`${tabKey}Aux`, d.auxChart.labels, auxSeries, false);
+      }
+    }
+
+    function updateIntel(tabKey){
+      const d = dashboardData.tabs[tabKey];
+      document.getElementById("conceptCard").innerHTML = `
+        <h3>${d.concept_title}</h3>
+        <p>${d.concept}</p>
+        <div class="band"><span>Formula</span><span>${d.formula}</span></div>
+        <div class="record-grid">
+          <div class="record">
+            <div class="label">Record High</div>
+            <div class="val">${d.records.high}</div>
+            <div class="mini">${d.records.high_date}</div>
+          </div>
+          <div class="record">
+            <div class="label">Record Low</div>
+            <div class="val">${d.records.low}</div>
+            <div class="mini">${d.records.low_date}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("legendCard").innerHTML = `
+        <h3>Semaphore & thresholds</h3>
+        ${d.thresholds.map(t => `
+          <div class="band">
+            <span><span class="dot ${t.color}" style="display:inline-block;margin-right:8px"></span>${t.label}</span>
+            <span>${t.desc}</span>
+          </div>
+        `).join("")}
+        <p>Range context: ${d.records.range}</p>
+      `;
+
+      document.getElementById("metaCard").innerHTML = `
+        <h3>Data status</h3>
+        <p><strong>Source:</strong> ${dashboardData.meta.source}</p>
+        <p><strong>Last sync:</strong> ${new Date(dashboardData.meta.last_sync).toLocaleString()}</p>
+        <p><strong>Auto-refresh:</strong> every ${dashboardData.meta.auto_refresh_seconds / 60} minutes</p>
+        <p><strong>Stale after:</strong> ${dashboardData.meta.stale_after_hours} hours</p>
+        <p><strong>Version:</strong> ${dashboardData.meta.version}</p>
+      `;
+    }
+
+    function activateTab(tabKey){
+      activeTab = tabKey;
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tabKey);
+      });
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      document.getElementById(`tab-${tabKey}`).classList.add("active");
+      updateIntel(tabKey);
+    }
+
+    function renderAll(){
+      destroyCharts();
+      buildStatus();
+      renderOverview();
+      renderStandardTab("core", "Balance Sheet Structure", "Assets vs Liabilities");
+      renderStandardTab("sterilisation", "Sterilisation Tools", "Drainage Score");
+      renderStandardTab("banking", "Credit and Deposits", "Credit Impulse");
+      renderStandardTab("rates", "Funding Rates", "Curve Slope");
+      renderStandardTab("fx", "Reserve Trend", "CHF Regime Proxy");
+      renderStandardTab("ai", "AI Regime Engine", "Subsystem Score");
+      activateTab(activeTab);
+    }
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+    });
+
+    loadDashboardData();
+    setInterval(() => {
+      loadDashboardData();
+    }, (fallbackData.meta.auto_refresh_seconds || 900) * 1000);
+  </script>
+</body>
+</html>
