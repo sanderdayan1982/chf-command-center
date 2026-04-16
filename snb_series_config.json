@@ -24,12 +24,12 @@
   "scale": 1.0
   },
     "absorbing_repos": {
-      "label": "Liquidity-absorbing repos",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
+  "label": "Liquidity-absorbing repos",
+  "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D,VRGSF,UT,VF,AIWFS,SP,RE,T1)&fromDate=2025-02&toDate=2026-02",
+  "format": "csv",
+  "date_field": "Date",
+  "value_field": "Value",
+  "scale": 1.0
     },
     "confederation_liabilities": {
       "label": "Liabilities towards the Confederation",
