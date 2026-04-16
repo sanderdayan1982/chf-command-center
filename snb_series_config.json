@@ -16,12 +16,12 @@
     "scale": 1.0
   },
   "snb_bills": {
-    "label": "SNB Bills / debt certificates",
-    "url": "https://data.snb.ch/api/list/snbbillshreg/data/csv/en",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
+  "label": "SNB Bills / debt certificates",
+  "url": "https://data.snb.ch/api/list/snbbillshreg/data/csv/en",
+  "format": "csv",
+  "date_field": "Payment",
+  "value_field": "Outstanding volume",
+  "scale": 1.0
   },
     "absorbing_repos": {
       "label": "Liquidity-absorbing repos",
