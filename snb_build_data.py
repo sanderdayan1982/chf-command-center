@@ -177,29 +177,37 @@ def to_float(x):
 
 def parse_csv_bytes(raw: bytes, date_field: str, value_field: str, scale: float):
     text = raw.decode('utf-8-sig', errors='ignore')
-    lines = text.splitlines()
+    lines = [line for line in text.splitlines() if line.strip()]
 
     header_index = None
-    for i, line in enumerate(lines[:60]):
-        cols = [c.strip() for c in line.split(',')]
-        if date_field in cols and value_field in cols:
-            header_index = i
+    delimiter = ','
+
+    for cand in [',', ';', '\t']:
+        for i, line in enumerate(lines[:80]):
+            cols = [c.strip().strip('"') for c in line.split(cand)]
+            if date_field in cols and value_field in cols:
+                header_index = i
+                delimiter = cand
+                break
+        if header_index is not None:
             break
 
     if header_index is None:
         return []
 
     cleaned = "\n".join(lines[header_index:])
-    rows = list(csv.DictReader(io.StringIO(cleaned)))
+    rows = list(csv.DictReader(io.StringIO(cleaned), delimiter=delimiter))
+
     out = []
     for row in rows:
-        dt = parse_date(row.get(date_field))
-        val = to_float(row.get(value_field))
+        normalized = {str(k).strip().strip('"'): v for k, v in row.items() if k is not None}
+        dt = parse_date(normalized.get(date_field))
+        val = to_float(normalized.get(value_field))
         if dt is None or val is None:
             continue
         out.append((dt, val * scale))
-    return sorted(out, key=lambda x: x[0])
 
+    return sorted(out, key=lambda x: x[0])
 
 def parse_json_bytes(raw: bytes, date_field: str, value_field: str, scale: float):
     obj = json.loads(raw.decode('utf-8'))
