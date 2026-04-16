@@ -39,13 +39,13 @@
   "value_field": "Value",
   "scale": 1.0
     },
-    "fx_investments": {
-      "label": "Foreign currency investments",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
+    "foreign_currency_investments": {
+  "label": "Foreign currency investments",
+  "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D)&fromDate=2025-02&toDate=2026-02",
+  "format": "csv",
+  "date_field": "Date",
+  "value_field": "Value",
+  "scale": 1.0
     },
     "domestic_loans": {
       "label": "Domestic loans",
