@@ -7,23 +7,22 @@
     "version": "v1.1 production builder"
   },
   "series": {
-    "sight_deposits": {
-  "label": "Sight deposits of domestic banks",
-  "url": "https://data.snb.ch/api/cube/snbgwdmigirow/data/csv/en",
-  "format": "csv",
-  "date_field": "Date",
-  "value_field": "Value",
-  "scale": 1.0
-},
-    },
-    "snb_bills": {
-      "label": "SNB Bills / debt certificates",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
-    },
+  "sight_deposits": {
+    "label": "Sight deposits of domestic banks",
+    "url": "https://data.snb.ch/api/cube/snbgwdmigirow/data/csv/en",
+    "format": "csv",
+    "date_field": "Date",
+    "value_field": "Value",
+    "scale": 1.0
+  },
+  "snb_bills": {
+    "label": "SNB Bills / debt certificates",
+    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+    "format": "csv",
+    "date_field": "Date",
+    "value_field": "Value",
+    "scale": 1.0
+  },
     "absorbing_repos": {
       "label": "Liquidity-absorbing repos",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
