@@ -118,7 +118,7 @@ DEFAULT_CONFIG = {
       "date_field": "Date",
       "value_field": "Value",
       "scale": 1.0,
-      "optional": true
+      "optional": True
     }
   }
 }
