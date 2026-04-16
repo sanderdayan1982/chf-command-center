@@ -17,7 +17,7 @@
   },
   "snb_bills": {
     "label": "SNB Bills / debt certificates",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+    "url": "https://data.snb.ch/api/list/snbbillshreg/data/csv/en",
     "format": "csv",
     "date_field": "Date",
     "value_field": "Value",
