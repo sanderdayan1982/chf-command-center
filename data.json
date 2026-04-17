@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "dashboard_title": "SNB Liquidity Command Center",
+    "last_sync": "2026-04-17T02:27:43Z",
+    "auto_refresh_seconds": 900,
+    "source": "SNB data portal / BIS / FRED",
+    "stale_after_hours": 36,
+    "version": "v1.1 production builder"
+  },
+  "status": {
+    "liquidity_regime": "Supportive",
+    "policy_bias": "Restrictive",
+    "market_stress": "Contained",
+    "reserve_direction": "Contracting",
+    "data_integrity": "Healthy"
+  },
+  "tabs": {}
+}
