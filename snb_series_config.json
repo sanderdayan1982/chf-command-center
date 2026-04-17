@@ -65,7 +65,7 @@
     },
     "saron": {
       "label": "SARON",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "url": "https://data.snb.ch/api/cube/snbgwdzid/data/csv/en?dimSel=D0(SARON)&fromDate=2026-04-06&toDate=2026-04-10",
       "format": "csv",
       "date_field": "Date",
       "value_field": "Value",
