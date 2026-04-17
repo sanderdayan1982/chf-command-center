@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 BASE = Path(__file__).resolve().parent
 CONFIG_FILE = BASE / 'snb_series_config.json'
 OUTPUT_FILE = BASE / 'data.json'
-TIMEOUT = 30
+TIMEOUT = 60
 USER_AGENT = 'SNB-Liquidity-Builder/1.0'
 
 # --- Config helpers ---------------------------------------------------------
