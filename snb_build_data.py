@@ -308,8 +308,6 @@ def build_data(cfg, loaded):
     cdep = loaded['customer_deposits']
     policy = loaded['policy_rate']
     saron = loaded['saron']
-    y2 = loaded['yield_2y']
-    y10 = loaded['yield_10y']
     chf = loaded.get('chf_index', [])
 
     pulse_raw = delta(sd) - delta(bills) - delta(repos) - delta(conf) - max(0.0, -delta(fx))
@@ -485,8 +483,6 @@ def build_data(cfg, loaded):
           'table': [
             ['Policy Rate', f"{number(latest(policy),2)}%", 'Neutral', 'Official stance'],
             ['SARON', f"{number(latest(saron),2)}%", 'Green' if abs(latest(saron)-latest(policy))<0.15 else 'Amber', 'Funding cost'],
-            ['2Y Yield', f"{number(latest(y2),2)}%", 'Amber', 'Front end'],
-            ['10Y Yield', f"{number(latest(y10),2)}%", 'Amber', 'Long end']
           ]
         },
         'fx': {
