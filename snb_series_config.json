@@ -7,101 +7,97 @@
     "version": "v1.1 production builder"
   },
   "series": {
-  "sight_deposits": {
-    "label": "Sight deposits of domestic banks",
-    "url": "https://data.snb.ch/api/cube/snbgwdmigirow/data/csv/en",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "snb_bills": {
-    "label": "SNB Bills / debt certificates",
-    "url": "https://data.snb.ch/api/list/snbbillshreg/data/csv/en",
-    "format": "csv",
-    "date_field": "Payment",
-    "value_field": "Outstanding volume",
-    "scale": 1.0
-  },
-  "absorbing_repos": {
-    "label": "Liquidity-absorbing repos",
-    "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D,VRGSF,UT,VF,AIWFS,SP,RE,T1)&fromDate=2025-02&toDate=2026-02",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "confederation_liabilities": {
-    "label": "Liabilities towards the Confederation",
-    "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(VB)&fromDate=2025-02&toDate=2026-02",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "foreign_currency_investments": {
-    "label": "Foreign currency investments",
-    "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D)&fromDate=2025-02&toDate=2026-02",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "domestic_loans": {
-    "label": "Domestic loans",
-    "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(GD)&fromDate=2025-02&toDate=2026-02",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "customer_deposits": {
-    "label": "Customer deposits",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "policy_rate": {
-    "label": "SNB policy rate",
-    "url": "https://data.snb.ch/api/cube/snbgwdzid/data/csv/en?dimSel=D0(LZ)&fromDate=2020-01-01&toDate=2026-12-31",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "saron": {
-    "label": "SARON",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "yield_2y": {
-    "label": "Swiss Confederation 2Y yield",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "yield_10y": {
-    "label": "Swiss Confederation 10Y yield",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0
-  },
-  "chf_index": {
-    "label": "CHF strength proxy",
-    "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-    "format": "csv",
-    "date_field": "Date",
-    "value_field": "Value",
-    "scale": 1.0,
+    "sight_deposits": {
+      "label": "Sight deposits of domestic banks",
+      "url": "https://data.snb.ch/api/cube/snbgwdmigirow/data/csv/en",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "snb_bills": {
+      "label": "SNB Bills / debt certificates",
+      "url": "https://data.snb.ch/api/list/snbbillshreg/data/csv/en",
+      "format": "csv",
+      "date_field": "Payment",
+      "value_field": "Outstanding volume",
+      "scale": 1.0
+    },
+    "absorbing_repos": {
+      "label": "Liquidity-absorbing repos",
+      "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D,VRGSF,UT,VF,AIWFS,SP,RE,T1)&fromDate=2025-02&toDate=2026-02",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "confederation_liabilities": {
+      "label": "Liabilities towards the Confederation",
+      "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(VB)&fromDate=2025-02&toDate=2026-02",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "foreign_currency_investments": {
+      "label": "Foreign currency investments",
+      "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(D)&fromDate=2025-02&toDate=2026-02",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "domestic_loans": {
+      "label": "Domestic loans",
+      "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(GD)&fromDate=2025-02&toDate=2026-02",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "policy_rate": {
+      "label": "SNB policy rate",
+      "url": "https://data.snb.ch/api/cube/snbgwdzid/data/csv/en?dimSel=D0(LZ)&fromDate=2020-01-01&toDate=2026-12-31",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "saron": {
+      "label": "SARON",
+      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "yield_2y": {
+      "label": "Swiss Confederation 2Y yield",
+      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "yield_10y": {
+      "label": "Swiss Confederation 10Y yield",
+      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0
+    },
+    "chf_index": {
+      "label": "CHF strength proxy",
+      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "format": "csv",
+      "date_field": "Date",
+      "value_field": "Value",
+      "scale": 1.0,
+      "optional": true
+    }
+  }
+}
     "optional": true
   }
 }
