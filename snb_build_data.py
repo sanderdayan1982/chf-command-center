@@ -158,15 +158,16 @@ def load_series(spec):
             spec['date_field'],
             spec['value_field'],
             spec.get('scale', 1.0),
-        )
+     )
 
     # Caso CSV normal
-    data = parse_csv_bytes(
+        data = parse_csv_bytes(
         raw,
         spec['date_field'],
         spec['value_field'],
         spec.get('scale', 1.0),
     )
+    print("DEBUG normal", spec.get('label'), len(data))
 
     # Fallback especial solo para sight_deposits
     if not data and spec.get('label') == 'Sight deposits of domestic banks':
@@ -174,7 +175,6 @@ def load_series(spec):
         lines = [line for line in text.splitlines() if line.strip()]
 
         header_index = None
-        # El CSV del SNB viene con ';' como separador y cabecera "Date";"D0";"Value"
         for i, line in enumerate(lines[:80]):
             cols = [c.strip().strip('"') for c in line.split(';')]
             if 'Date' in cols and 'Value' in cols:
@@ -182,8 +182,27 @@ def load_series(spec):
                 break
 
         if header_index is None:
-            # No encontramos cabecera, devolvemos el resultado normal (vacío)
             return data
+
+        cleaned = "\n".join(lines[header_index:])
+        reader = csv.DictReader(io.StringIO(cleaned), delimiter=';')
+
+        fallback = []
+        for row in reader:
+            d = row.get('Date')
+            v = row.get('Value')
+            if not d or not v:
+                continue
+            dt = parse_date(d)
+            val = to_float(v)
+            if dt is None or val is None:
+                continue
+            fallback.append((dt, val * spec.get('scale', 1.0)))
+
+        print("DEBUG fallback", spec.get('label'), len(fallback))
+        return sorted(fallback, key=lambda x: x[0])
+
+    return data
 
         cleaned = "\n".join(lines[header_index:])
         reader = csv.DictReader(io.StringIO(cleaned), delimiter=';')
