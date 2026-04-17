@@ -139,13 +139,13 @@ def load_series(spec):
     except TimeoutError:
         # Si se agota el tiempo de lectura, tratamos la serie como vacía si es opcional
         if spec.get('optional'):
-            print(f"[WARN] Timeout loading optional series: {spec.get('label')}")
+            print(f"[WARN] Timeout loading optional series: {spec.get('label')}", flush=True)
             return []
         raise
     except URLError as e:
         # Errores de red para series opcionales no tumban el build
         if spec.get('optional'):
-            print(f"[WARN] Network error on optional series {spec.get('label')}: {e}")
+            print(f"[WARN] Network error on optional series {spec.get('label')}: {e}", flush=True)
             return []
         raise
 
@@ -153,15 +153,17 @@ def load_series(spec):
 
     # Caso JSON normal
     if fmt == 'json':
-        return parse_json_bytes(
+        data = parse_json_bytes(
             raw,
             spec['date_field'],
             spec['value_field'],
             spec.get('scale', 1.0),
-     )
+        )
+        print("DEBUG normal", spec.get('label'), len(data), flush=True)
+        return data
 
     # Caso CSV normal
-            data = parse_csv_bytes(
+    data = parse_csv_bytes(
         raw,
         spec['date_field'],
         spec['value_field'],
@@ -175,6 +177,7 @@ def load_series(spec):
         lines = [line for line in text.splitlines() if line.strip()]
 
         header_index = None
+        # El CSV del SNB viene con ';' como separador y cabecera "Date";"D0";"Value"
         for i, line in enumerate(lines[:80]):
             cols = [c.strip().strip('"') for c in line.split(';')]
             if 'Date' in cols and 'Value' in cols:
@@ -182,6 +185,7 @@ def load_series(spec):
                 break
 
         if header_index is None:
+            # No encontramos cabecera, devolvemos el resultado normal (vacío)
             return data
 
         cleaned = "\n".join(lines[header_index:])
@@ -203,7 +207,6 @@ def load_series(spec):
         return sorted(fallback, key=lambda x: x[0])
 
     return data
-
         cleaned = "\n".join(lines[header_index:])
         reader = csv.DictReader(io.StringIO(cleaned), delimiter=';')
 
