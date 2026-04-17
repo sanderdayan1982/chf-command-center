@@ -125,7 +125,7 @@ def parse_json_bytes(raw: bytes, date_field: str, value_field: str, scale: float
             continue
         out.append((dt, val * scale))
     return sorted(out, key=lambda x: x[0])
-
+from urllib.error import URLError
 
 def load_series(spec):
     url = spec.get('url', '').strip()
@@ -133,12 +133,26 @@ def load_series(spec):
         if spec.get('optional'):
             return []
         raise ValueError(f"Missing URL for series: {spec.get('label')}")
-    raw = http_get(url)
+
+    try:
+        raw = http_get(url)
+    except TimeoutError:
+        # Si se agota el tiempo de lectura, tratamos la serie como vacía si es opcional
+        if spec.get('optional'):
+            print(f"[WARN] Timeout loading optional series: {spec.get('label')}")
+            return []
+        raise
+    except URLError as e:
+        # Errores de red para series opcionales no tumban el build
+        if spec.get('optional'):
+            print(f"[WARN] Network error on optional series {spec.get('label')}: {e}")
+            return []
+        raise
+
     fmt = spec.get('format', 'csv').lower()
     if fmt == 'json':
         return parse_json_bytes(raw, spec['date_field'], spec['value_field'], spec.get('scale', 1.0))
     return parse_csv_bytes(raw, spec['date_field'], spec['value_field'], spec.get('scale', 1.0))
-
 # --- Series helpers ---------------------------------------------------------
 
 def last_n(series, n):
