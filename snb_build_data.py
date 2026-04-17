@@ -35,8 +35,8 @@ DEFAULT_CONFIG = {
       "label": "SNB Bills / debt certificates",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
       "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
+      "date_field": "Payment",
+      "value_field": "Outstanding volume",
       "scale": 1.0
     },
     "absorbing_repos": {
@@ -55,7 +55,7 @@ DEFAULT_CONFIG = {
       "value_field": "Value",
       "scale": 1.0
     },
-     "foreign_currency_investments": {
+    "foreign_currency_investments": {
       "label": "Foreign currency investments",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
       "format": "csv",
@@ -193,6 +193,7 @@ def parse_csv_bytes(raw: bytes, date_field: str, value_field: str, scale: float)
 
     return sorted(out, key=lambda x: x[0])
 
+
 def parse_json_bytes(raw: bytes, date_field: str, value_field: str, scale: float):
     obj = json.loads(raw.decode('utf-8'))
     if isinstance(obj, dict):
@@ -323,9 +324,18 @@ def build_data(cfg, loaded):
     ster_score = clamp(50 + 2.0 * delta(bills) + 1.5 * delta(repos) - 1.2 * delta(sd), 0, 100)
     fiscal_score = clamp(50 + 2.0 * delta(conf), 0, 100)
     credit_impulse = pct_change(loans, 12) - pct_change(cdep, 12)
-    funding_score = clamp(60 - 30.0 * abs(latest(saron) - latest(policy)),0, 100)
+    funding_score = clamp(60 - 30.0 * abs(latest(saron) - latest(policy)), 0, 100)
     reserve_score = clamp(50 - 2.0 * max(0.0, -delta(fx)) + 1.0 * max(0.0, delta(fx)), 0, 100)
-    ai_score = clamp(50 + (pulse_z * 12) - (ster_score - 50) - (fiscal_score - 50) + (credit_impulse * 10) + ((funding_score - 50) * 0.4) + ((reserve_score - 50) * 0.6), 0, 100)
+    ai_score = clamp(
+        50
+        + (pulse_z * 12)
+        - (ster_score - 50)
+        - (fiscal_score - 50)
+        + (credit_impulse * 10)
+        + ((funding_score - 50) * 0.4)
+        + ((reserve_score - 50) * 0.6),
+        0, 100
+    )
 
     liquidity_regime = 'Supportive' if pulse_z > 0.5 else 'Mixed-to-Tight' if pulse_z > -0.5 else 'Tight'
     policy_bias = 'Restrictive' if latest(policy) >= latest(saron) else 'Neutral'
@@ -410,7 +420,7 @@ def build_data(cfg, loaded):
             {'label':'Red','desc':'Sight deposits and reserves contracting together','color':'red'}
           ],
           'mainChart': {'labels': overview_labels,'series':[
-            {'name':'foreign_currency_investments','data':[number(v,1) for v in values(last_n(fx,12))],'color':'#8b5cf6'},
+            {'name':'Foreign Currency Investments','data':[number(v,1) for v in values(last_n(fx,12))],'color':'#8b5cf6'},
             {'name':'Sight Deposits','data':[number(v,1) for v in values(last_n(sd,12))],'color':'#3ecbff'},
             {'name':'Confederation Liabilities','data':[number(v,1) for v in values(last_n(conf,12))],'color':'#ef4444'}]},
           'auxChart': {'labels': overview_labels[-4:], 'series':[
@@ -418,7 +428,7 @@ def build_data(cfg, loaded):
             {'name':'Liabilities Proxy','data':[number(a+b,1) for a,b in zip(values(last_n(sd,4)), values(last_n(conf,4)))],'color':'#22c55e'}]},
           'records': {'high': f"FX assets {number(max(values(fx)),1)} bn", 'high_date': labels(fx)[values(fx).index(max(values(fx)))], 'low': f"Sight deposits {number(min(values(sd)),1)} bn", 'low_date': labels(sd)[values(sd).index(min(values(sd)))], 'range':'Dynamic series range'},
           'table': [
-            ['foreign_currency_investments', f"{number(latest(fx),1)} bn CHF", 'Supportive' if delta(fx)>0 else 'Restrictive overlay', 'Reserve stock'],
+            ['FX Investments', f"{number(latest(fx),1)} bn CHF", 'Supportive' if delta(fx)>0 else 'Restrictive overlay', 'Reserve stock'],
             ['Sight Deposits', f"{number(latest(sd),1)} bn CHF", 'Green' if delta(sd)>0 else 'Amber', 'Banks liquidity'],
             ['Confederation Liabilities', f"{number(latest(conf),1)} bn CHF", 'Amber' if delta(conf)<=0 else 'Red', 'Fiscal drain'],
             ['Net Core Bias', reserve_direction, traffic_from_score(50 + pulse_z*10), 'Composite view']
@@ -467,23 +477,50 @@ def build_data(cfg, loaded):
           ]
         },
         'rates': {
-          'concept_title':'Price of money and curve structure',
-          'concept':'This tab prices CHF liquidity using the SNB policy stance, SARON and the Swiss Confederation sovereign curve.',
-          'formula':'Funding Stress = SARON vs Policy Rate + 2Y/10Y Slope Behaviour',
-          'thresholds':[
-            {'label':'Green','desc':'Funding orderly and curve supportive','color':'green'},
-            {'label':'Amber','desc':'Curve mixed, carry neutral','color':'amber'},
-            {'label':'Red','desc':'Funding pressure or adverse curve repricing','color':'red'}
+          'concept_title': 'Price of money and CHF funding stress',
+          'concept': 'This tab tracks CHF money-market conditions through the SNB policy rate, SARON and their spread as a live stress proxy.',
+          'formula': 'Funding Stress = abs(SARON - Policy Rate)',
+          'thresholds': [
+            {'label': 'Green', 'desc': 'SARON closely aligned with policy rate, orderly CHF funding', 'color': 'green'},
+            {'label': 'Amber', 'desc': 'Some funding tension or temporary spread widening', 'color': 'amber'},
+            {'label': 'Red', 'desc': 'Material dislocation between SARON and policy rate', 'color': 'red'}
           ],
-         'mainChart': { 'labels': labels(last_n(policy,12)),'series': [{'name': 'SNB Policy Rate','data': [number(v,2) for v in values(last_n(policy,12))],'color': '#3ecbff'},{'name': 'SARON','data': [number(v,2) for v in values(last_n(saron,12))],'color': '#22c55e'}]},'auxChart': {'labels': labels(last_n(policy,12)),'series': [{'name': 'Policy–SARON spread','data': [number(a-b,2) for a,b in zip(values(last_n(policy,12)), values(last_n(saron,12)))],'color': '#f59e0b'}
-          ]
-        },
-          'records': {'high': f"SARON {number(max(values(saron)),2)}%", 'high_date': labels(saron)[values(saron).index(max(values(saron)))], 'low': f"{number(min(values(saron)),2)}%", 'low_date': labels(saron)[values(saron).index(min(values(saron)))], 'range':'Series range'},
+          'mainChart': {
+            'labels': labels(last_n(policy, 12)),
+            'series': [
+              {
+                'name': 'SNB Policy Rate',
+                'data': [number(v, 2) for v in values(last_n(policy, 12))],
+                'color': '#3ecbff'
+              },
+              {
+                'name': 'SARON',
+                'data': [number(v, 2) for v in values(last_n(saron, 12))],
+                'color': '#22c55e'
+              }
+            ]
+          },
+          'auxChart': {
+            'labels': labels(last_n(policy, 12)),
+            'series': [
+              {
+                'name': 'Policy–SARON spread',
+                'data': [number(a - b, 2) for a, b in zip(values(last_n(policy, 12)), values(last_n(saron, 12)))],
+                'color': '#f59e0b'
+              }
+            ]
+          },
+          'records': {
+            'high': f"SARON {number(max(values(saron)),2)}%",
+            'high_date': labels(saron)[values(saron).index(max(values(saron)))],
+            'low': f"{number(min(values(saron)),2)}%",
+            'low_date': labels(saron)[values(saron).index(min(values(saron)))],
+            'range': 'Series range'
+          },
           'table': [
-           'table': [
-         ['Policy Rate', f"{number(latest(policy),2)}%", 'Neutral', 'Official stance'],
-         ['SARON', f"{number(latest(saron),2)}%", 'Green' if abs(latest(saron)-latest(policy)) < 0.15 else 'Amber', 'Funding cost'],
-         ['Funding Stress', f"{number(funding_score,0)}/100", 'Green' if funding_score >= 60 else 'Amber' if funding_score >= 40 else 'Red', 'Policy–SARON gap']] 
+            ['Policy Rate', f"{number(latest(policy),2)}%", 'Neutral', 'Official stance'],
+            ['SARON', f"{number(latest(saron),2)}%", 'Green' if abs(latest(saron) - latest(policy)) < 0.15 else 'Amber', 'Funding cost'],
+            ['Funding Stress', f"{number(funding_score,0)}/100", 'Green' if funding_score >= 60 else 'Amber' if funding_score >= 40 else 'Red', 'Policy–SARON gap']
           ]
         },
         'fx': {
@@ -499,7 +536,7 @@ def build_data(cfg, loaded):
           'auxChart': {'labels': chf_labels,'series':[{'name':'CHF Index','data':chf_vals,'color':'#3ecbff'}]},
           'records': {'high': f"FX investments {number(max(values(fx)),1)} bn", 'high_date': labels(fx)[values(fx).index(max(values(fx)))], 'low': f"{number(min(chf_vals),1)} CHF index", 'low_date': chf_labels[chf_vals.index(min(chf_vals))], 'range':'Dynamic reserve and FX range'},
           'table': [
-            ['foreign_currency_investments' f"{number(latest(fx),1)} bn CHF", 'Green' if delta(fx)>0 else 'Red', 'Reserve balance'],
+            ['FX Investments', f"{number(latest(fx),1)} bn CHF", 'Green' if delta(fx)>0 else 'Red', 'Reserve balance'],
             ['CHF Index', f"{number(chf_vals[-1],1)}", 'Red' if chf_vals[-1] > mean_or([(None,v) for v in chf_vals]) else 'Amber', 'Currency proxy'],
             ['Reserve Direction', reserve_direction, 'Red' if reserve_direction == 'Contracting' else 'Green', 'Overlay'],
             ['Intervention Bias', 'Monitor official language', 'Amber', 'Qualitative flag']
