@@ -55,7 +55,7 @@ DEFAULT_CONFIG = {
       "value_field": "Value",
       "scale": 1.0
     },
-    "fx_investments": {
+     "foreign_currency_investments": {
       "label": "Foreign currency investments",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
       "format": "csv",
