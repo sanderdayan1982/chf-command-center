@@ -319,7 +319,7 @@ def build_data(cfg, loaded):
     bills = loaded['snb_bills']
     repos = loaded['absorbing_repos']
     conf = loaded['confederation_liabilities']
-    fx = loaded['fx_investments']
+    fx = loaded['foreign_currency_investments']
     loans = loaded['domestic_loans']
     cdep = loaded['customer_deposits']
     policy = loaded['policy_rate']
@@ -518,7 +518,7 @@ def build_data(cfg, loaded):
           'auxChart': {'labels': chf_labels,'series':[{'name':'CHF Index','data':chf_vals,'color':'#3ecbff'}]},
           'records': {'high': f"FX investments {number(max(values(fx)),1)} bn", 'high_date': labels(fx)[values(fx).index(max(values(fx)))], 'low': f"{number(min(chf_vals),1)} CHF index", 'low_date': chf_labels[chf_vals.index(min(chf_vals))], 'range':'Dynamic reserve and FX range'},
           'table': [
-            ['FX Investments', f"{number(latest(fx),1)} bn CHF", 'Green' if delta(fx)>0 else 'Red', 'Reserve balance'],
+            ['foreign_currency_investments' f"{number(latest(fx),1)} bn CHF", 'Green' if delta(fx)>0 else 'Red', 'Reserve balance'],
             ['CHF Index', f"{number(chf_vals[-1],1)}", 'Red' if chf_vals[-1] > mean_or([(None,v) for v in chf_vals]) else 'Amber', 'Currency proxy'],
             ['Reserve Direction', reserve_direction, 'Red' if reserve_direction == 'Contracting' else 'Green', 'Overlay'],
             ['Intervention Bias', 'Monitor official language', 'Amber', 'Qualitative flag']
