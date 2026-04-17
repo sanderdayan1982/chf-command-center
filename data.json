@@ -1,7 +1,7 @@
 {
   "meta": {
     "dashboard_title": "SNB Liquidity Command Center",
-    "last_sync": "2026-04-17T14:45:17Z",
+    "last_sync": "2026-04-17T15:50:22Z",
     "auto_refresh_seconds": 900,
     "source": "SNB data portal / BIS / FRED",
     "stale_after_hours": 36,
