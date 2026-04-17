@@ -95,22 +95,6 @@ DEFAULT_CONFIG = {
       "value_field": "Value",
       "scale": 1.0
     },
-    "yield_2y": {
-      "label": "Swiss Confederation 2Y yield",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
-    },
-    "yield_10y": {
-      "label": "Swiss Confederation 10Y yield",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
-      "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
-      "scale": 1.0
-    },
     "chf_index": {
       "label": "CHF strength proxy",
       "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
