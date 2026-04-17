@@ -167,7 +167,7 @@ def load_series(spec):
         spec['value_field'],
         spec.get('scale', 1.0),
     )
-    print("DEBUG normal", spec.get('label'), len(data))
+    print("DEBUG normal", spec.get('label'), len(data), flush=True)
 
     # Fallback especial solo para sight_deposits
     if not data and spec.get('label') == 'Sight deposits of domestic banks':
@@ -199,7 +199,7 @@ def load_series(spec):
                 continue
             fallback.append((dt, val * spec.get('scale', 1.0)))
 
-        print("DEBUG fallback", spec.get('label'), len(fallback))
+        print("DEBUG fallback", spec.get('label'), len(fallback), flush=True)
         return sorted(fallback, key=lambda x: x[0])
 
     return data
