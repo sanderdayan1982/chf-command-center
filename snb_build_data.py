@@ -323,7 +323,7 @@ def build_data(cfg, loaded):
     ster_score = clamp(50 + 2.0 * delta(bills) + 1.5 * delta(repos) - 1.2 * delta(sd), 0, 100)
     fiscal_score = clamp(50 + 2.0 * delta(conf), 0, 100)
     credit_impulse = pct_change(loans, 12) - pct_change(cdep, 12)
-    funding_score = clamp(60 - 20.0 * abs(latest(saron) - latest(policy)) - 15.0 * abs(latest(y10) - latest(y2)), 0, 100)
+    funding_score = clamp(60 - 30.0 * abs(latest(saron) - latest(policy)),0, 100)
     reserve_score = clamp(50 - 2.0 * max(0.0, -delta(fx)) + 1.0 * max(0.0, delta(fx)), 0, 100)
     ai_score = clamp(50 + (pulse_z * 12) - (ster_score - 50) - (fiscal_score - 50) + (credit_impulse * 10) + ((funding_score - 50) * 0.4) + ((reserve_score - 50) * 0.6), 0, 100)
 
@@ -410,7 +410,7 @@ def build_data(cfg, loaded):
             {'label':'Red','desc':'Sight deposits and reserves contracting together','color':'red'}
           ],
           'mainChart': {'labels': overview_labels,'series':[
-            {'name':'FX Investments','data':[number(v,1) for v in values(last_n(fx,12))],'color':'#8b5cf6'},
+            {'name':'foreign_currency_investments','data':[number(v,1) for v in values(last_n(fx,12))],'color':'#8b5cf6'},
             {'name':'Sight Deposits','data':[number(v,1) for v in values(last_n(sd,12))],'color':'#3ecbff'},
             {'name':'Confederation Liabilities','data':[number(v,1) for v in values(last_n(conf,12))],'color':'#ef4444'}]},
           'auxChart': {'labels': overview_labels[-4:], 'series':[
@@ -418,7 +418,7 @@ def build_data(cfg, loaded):
             {'name':'Liabilities Proxy','data':[number(a+b,1) for a,b in zip(values(last_n(sd,4)), values(last_n(conf,4)))],'color':'#22c55e'}]},
           'records': {'high': f"FX assets {number(max(values(fx)),1)} bn", 'high_date': labels(fx)[values(fx).index(max(values(fx)))], 'low': f"Sight deposits {number(min(values(sd)),1)} bn", 'low_date': labels(sd)[values(sd).index(min(values(sd)))], 'range':'Dynamic series range'},
           'table': [
-            ['FX Investments', f"{number(latest(fx),1)} bn CHF", 'Supportive' if delta(fx)>0 else 'Restrictive overlay', 'Reserve stock'],
+            ['foreign_currency_investments', f"{number(latest(fx),1)} bn CHF", 'Supportive' if delta(fx)>0 else 'Restrictive overlay', 'Reserve stock'],
             ['Sight Deposits', f"{number(latest(sd),1)} bn CHF", 'Green' if delta(sd)>0 else 'Amber', 'Banks liquidity'],
             ['Confederation Liabilities', f"{number(latest(conf),1)} bn CHF", 'Amber' if delta(conf)<=0 else 'Red', 'Fiscal drain'],
             ['Net Core Bias', reserve_direction, traffic_from_score(50 + pulse_z*10), 'Composite view']
@@ -475,14 +475,15 @@ def build_data(cfg, loaded):
             {'label':'Amber','desc':'Curve mixed, carry neutral','color':'amber'},
             {'label':'Red','desc':'Funding pressure or adverse curve repricing','color':'red'}
           ],
-          'mainChart': {'labels': labels(last_n(policy,12)),'series':[
-            {'name':'SNB Policy Rate','data':[number(v,2) for v in values(last_n(policy,12))],'color':'#3ecbff'},
-            {'name':'SARON','data':[number(v,2) for v in values(last_n(saron,12))],'color':'#22c55e'}]},
-          'auxChart': {'labels': labels(last_n(y2,12)),'series':[{'name':'2Y-10Y Spread','data':[number(a-b,2) for a,b in zip(values(last_n(y2,12)), values(last_n(y10,12)))],'color':'#f59e0b'}]},
+         'mainChart': { 'labels': labels(last_n(policy,12)),'series': [{'name': 'SNB Policy Rate','data': [number(v,2) for v in values(last_n(policy,12))],'color': '#3ecbff'},{'name': 'SARON','data': [number(v,2) for v in values(last_n(saron,12))],'color': '#22c55e'}]},'auxChart': {'labels': labels(last_n(policy,12)),'series': [{'name': 'Policy–SARON spread','data': [number(a-b,2) for a,b in zip(values(last_n(policy,12)), values(last_n(saron,12)))],'color': '#f59e0b'}
+          ]
+        },
           'records': {'high': f"SARON {number(max(values(saron)),2)}%", 'high_date': labels(saron)[values(saron).index(max(values(saron)))], 'low': f"{number(min(values(saron)),2)}%", 'low_date': labels(saron)[values(saron).index(min(values(saron)))], 'range':'Series range'},
           'table': [
-            ['Policy Rate', f"{number(latest(policy),2)}%", 'Neutral', 'Official stance'],
-            ['SARON', f"{number(latest(saron),2)}%", 'Green' if abs(latest(saron)-latest(policy))<0.15 else 'Amber', 'Funding cost'],
+           'table': [
+         ['Policy Rate', f"{number(latest(policy),2)}%", 'Neutral', 'Official stance'],
+         ['SARON', f"{number(latest(saron),2)}%", 'Green' if abs(latest(saron)-latest(policy)) < 0.15 else 'Amber', 'Funding cost'],
+         ['Funding Stress', f"{number(funding_score,0)}/100", 'Green' if funding_score >= 60 else 'Amber' if funding_score >= 40 else 'Red', 'Policy–SARON gap']] 
           ]
         },
         'fx': {
