@@ -2,7 +2,7 @@
   "meta": {
     "dashboard_title": "SNB Liquidity Command Center",
     "auto_refresh_seconds": 900,
-    "source": "SNB data portal / market references",
+    "source": "SNB data portal / BIS / FRED",
     "stale_after_hours": 36,
     "version": "v1.1 production builder"
   },
@@ -49,7 +49,7 @@
     },
     "domestic_loans": {
       "label": "Domestic loans",
-      "url": "https://data.snb.ch/api/cube/snbbipo/data/csv/en?dimSel=D0(GD)&fromDate=2025-02&toDate=2026-02",
+      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
       "format": "csv",
       "date_field": "Date",
       "value_field": "Value",
@@ -72,11 +72,11 @@
       "scale": 1.0
     },
     "chf_index": {
-      "label": "CHF strength proxy",
-      "url": "PASTE_DIRECT_CSV_OR_JSON_URL_HERE",
+      "label": "CHF strength proxy (BIS broad NEER)",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=NBCHBIS",
       "format": "csv",
-      "date_field": "Date",
-      "value_field": "Value",
+      "date_field": "DATE",
+      "value_field": "NBCHBIS",
       "scale": 1.0,
       "optional": true
     }
