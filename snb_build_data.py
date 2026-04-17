@@ -161,13 +161,14 @@ def load_series(spec):
      )
 
     # Caso CSV normal
-        data = parse_csv_bytes(
+            data = parse_csv_bytes(
         raw,
         spec['date_field'],
         spec['value_field'],
         spec.get('scale', 1.0),
-     print("DEBUG normal", spec.get('label'), len(data), flush=True)
     )
+    print("DEBUG normal", spec.get('label'), len(data), flush=True)
+
     # Fallback especial solo para sight_deposits
     if not data and spec.get('label') == 'Sight deposits of domestic banks':
         text = raw.decode('utf-8-sig', errors='ignore')
